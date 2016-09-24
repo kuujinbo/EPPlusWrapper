@@ -230,7 +230,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
             {
                 AllBorders = true,
                 Bold = true,
-                BackgroundColor = Color.Black,
+                BackgroundColor = Color.Green,
                 FontColor = Color.Yellow,
                 FontSize = 20,
                 HorizontalAlignment = CellAlignment.HorizontalCenter,
@@ -263,6 +263,14 @@ namespace kuujinbo.EPPlusWrapper.Tests
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Bottom.Style);
                     Assert.Equal(ExcelFillStyle.Solid, style.Fill.PatternType);
                     Assert.True(style.Font.Bold);
+                    Assert.Equal(
+                        Color.Green,
+                        ColorTranslator.FromHtml("#" + style.Fill.BackgroundColor.Rgb)
+                    );
+                    Assert.Equal(
+                        Color.Yellow,
+                        ColorTranslator.FromHtml("#" + style.Font.Color.Rgb)
+                    );
                     Assert.Equal(cell1.FontSize, style.Font.Size);
                     Assert.Equal(
                         (ExcelHorizontalAlignment)cell1.HorizontalAlignment,
