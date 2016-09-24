@@ -7,7 +7,7 @@ namespace kuujinbo.EPPlusWrapper
 {
     class Program
     {
-        const int SHEETS = 20;
+        const int SHEETS = 10;
         static readonly Random random = new Random();
 
         static void Main(string[] args)
