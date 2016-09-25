@@ -225,8 +225,9 @@ namespace kuujinbo.EPPlusWrapper.Tests
         [Fact]
         public void WriteCell_WithAddressAndCell_WritesToWorkSheet()
         {
-            var cell1Value = 100d;
-            var cell1 = new Cell()
+            // arrange
+            var cellValue = 100d;
+            var cell = new Cell()
             {
                 AllBorders = true,
                 Bold = true,
@@ -236,15 +237,22 @@ namespace kuujinbo.EPPlusWrapper.Tests
                 HorizontalAlignment = CellAlignment.HorizontalCenter,
                 VerticalAlignment = CellAlignment.VerticalBottom,
                 NumberFormat = Cell.FORMAT_TWO_DECIMAL,
-                Value = cell1Value
+                Value = cellValue
             };
-            var cell2 = new Cell() { Formula = "SUM(A1:B1)" };
+            
+            var badSize = Cell.MIN_FONT_SIZE - 1;
+            var badFontSize = new Cell() { FontSize = badSize };
 
-            _writer.WriteCell(1, 1, cell1);
-            _writer.WriteCell(1, 2, cell2);
+            var formula = new Cell() { Formula = "SUM(A1:B1)" };
+
+            // act
+            _writer.WriteCell(1, 1, cell);
+            _writer.WriteCell(1, 2, badFontSize);
+            _writer.WriteCell(1, 3, formula);
             var bytes = _writer.GetAllBytes();
             _writer.Dispose();
 
+            // assert
             using (var ms = new MemoryStream(bytes))
             {
                 using (var package = new ExcelPackage(ms))
@@ -255,7 +263,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
 
                     Assert.Equal(1, package.Workbook.Worksheets.Count);
                     Assert.Equal(1, sheet.Dimension.End.Row);
-                    Assert.Equal(2, sheet.Dimension.End.Column);
+                    Assert.Equal(3, sheet.Dimension.End.Column);
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Left.Style);
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Right.Style);
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Top.Style);
@@ -271,19 +279,21 @@ namespace kuujinbo.EPPlusWrapper.Tests
                         Color.Yellow,
                         ColorTranslator.FromHtml("#" + style.Font.Color.Rgb)
                     );
-                    Assert.Equal(cell1.FontSize, style.Font.Size);
+                    Assert.Equal(cell.FontSize, style.Font.Size);
                     Assert.Equal(
-                        (ExcelHorizontalAlignment)cell1.HorizontalAlignment,
+                        (ExcelHorizontalAlignment)cell.HorizontalAlignment,
                         style.HorizontalAlignment
                     );
                     Assert.Equal(
-                        (ExcelVerticalAlignment)cell1.VerticalAlignment,
+                        (ExcelVerticalAlignment)cell.VerticalAlignment,
                         style.VerticalAlignment
                     );
                     Assert.Equal(Cell.FORMAT_TWO_DECIMAL, wrapperCell.Style.Numberformat.Format);
-                    Assert.Equal(cell1Value, wrapperCell.Value);
+                    Assert.Equal(cellValue, wrapperCell.Value);
 
-                    Assert.Equal(cell2.Formula, sheet.Cells[1, 2].Formula);
+                    Assert.NotEqual(badSize, sheet.Cells[1, 2].Style.Font.Size);
+                    
+                    Assert.Equal(formula.Formula, sheet.Cells[1, 3].Formula);
                 }            
             }
         }
