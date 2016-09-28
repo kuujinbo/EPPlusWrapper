@@ -119,6 +119,32 @@ namespace kuujinbo.EPPlusWrapper
             }
             return this;
         }
+
+        /// <summary>
+        /// format string to get an ExcelAddress ExcelWorksheet.PrinterSettings.RepeatRows 
+        /// understands
+        /// </summary>
+        public const string REPEAT_PRINT_ROWS = "{0}:{0}";
+
+        /// <summary>
+        /// Excel freeze panes.
+        /// </summary>
+        /// <param name="rows">number of rows to freeze</param>
+        /// <param name="columns">number of columns to freeze</param>
+        /// <param name="forPrinting">print forzen panes</param>
+        /// <remarks>
+        /// Excel API makes things hard and unintuitive; we need to add 1
+        /// to the row and column parameters, because Excel counts the 
+        /// number **NOT** frozen.
+        /// </remarks>
+        public void FreezePanes(int rows, int columns, bool forPrinting = false)
+        {
+            Worksheet.View.FreezePanes(rows + 1, columns + 1);
+
+            if (forPrinting) Worksheet.PrinterSettings.RepeatRows = new ExcelAddress(
+                string.Format(REPEAT_PRINT_ROWS, rows)
+            );
+        }
         #endregion
 
         #region header/footer

@@ -117,6 +117,8 @@ namespace kuujinbo.EPPlusWrapper
         public void WriteRequestData(ExcelWriter writer, int startRow, int hoursStartColumn, List<int> data)
         {
             var lastColumn = hoursStartColumn + NumberOfDays + 1;
+            writer.FreezePanes(1, lastColumn, true);
+
             foreach (var d in data)
             {
                 // empty merged cells

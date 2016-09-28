@@ -249,6 +249,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
             _writer.WriteCell(1, 1, cell);
             _writer.WriteCell(1, 2, badFontSize);
             _writer.WriteCell(1, 3, formula);
+            _writer.FreezePanes(1, 3, true);
             var bytes = _writer.GetAllBytes();
             _writer.Dispose();
 
@@ -262,6 +263,27 @@ namespace kuujinbo.EPPlusWrapper.Tests
                     var style = wrapperCell.Style;
 
                     Assert.Equal(1, package.Workbook.Worksheets.Count);
+                    /* ========================================================
+                     * PrinterSettings.RepeatRows.Start.Address includes sheetname, 
+                     * so need two Assert()s instead of one....
+                     * ========================================================
+                     */
+                    Assert.Equal(
+                        new ExcelAddress(string.Format(ExcelWriter.REPEAT_PRINT_ROWS, 1, 1)).Start.Address, 
+                        sheet.PrinterSettings.RepeatRows.Start.Address
+                    );
+                    Assert.Equal(
+                        new ExcelAddress(string.Format(ExcelWriter.REPEAT_PRINT_ROWS, 1, 1)).End.Address, 
+                        sheet.PrinterSettings.RepeatRows.End.Address
+                    );
+                    /* ========================================================
+                     * should be one pane per page, (3 for **this** test) but 
+                     * since can't get number of panes programatically, check
+                     * for null. 
+                     * ========================================================
+                     */
+                    Assert.NotNull(sheet.View.Panes);
+
                     Assert.Equal(1, sheet.Dimension.End.Row);
                     Assert.Equal(3, sheet.Dimension.End.Column);
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Left.Style);
@@ -271,6 +293,11 @@ namespace kuujinbo.EPPlusWrapper.Tests
                     Assert.Equal(ExcelBorderStyle.Thin, style.Border.Bottom.Style);
                     Assert.Equal(ExcelFillStyle.Solid, style.Fill.PatternType);
                     Assert.True(style.Font.Bold);
+                    /* ========================================================
+                     * ExcelColor and System.Drawing.Color cannot be directly 
+                     * compared, so need to use ColorTranslator
+                     * ========================================================
+                     */
                     Assert.Equal(
                         Color.Green,
                         ColorTranslator.FromHtml("#" + style.Fill.BackgroundColor.Rgb)
@@ -279,6 +306,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
                         Color.Yellow,
                         ColorTranslator.FromHtml("#" + style.Font.Color.Rgb)
                     );
+
                     Assert.Equal(cell.FontSize, style.Font.Size);
                     Assert.Equal(
                         (ExcelHorizontalAlignment)cell.HorizontalAlignment,
