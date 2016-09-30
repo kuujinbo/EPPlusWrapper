@@ -10,14 +10,13 @@ namespace kuujinbo.EPPlusWrapper
         public int ToCol { get; set; }
 
         /// <summary>
-        /// get a range of cells for a **SINGLE** row, which also includes
-        /// a **SINGLE* cell if needed
+        /// get cell range for **SINGLE** row, which includes **SINGLE* cell
         /// </summary>
         public CellRange(int row, int fromCol, int toCol)
             : this(row, fromCol, row, toCol) { }
 
         /// <summary>
-        /// get a range of cells that span **MORE** than one row
+        /// get cell range that span **MORE** than one row
         /// </summary>
         public CellRange(int fromRow, int fromCol, int toRow, int toCol)
         {
