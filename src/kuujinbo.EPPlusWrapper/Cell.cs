@@ -36,6 +36,8 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>see NumberFormat property</summary>
         public const string FORMAT_WHOLE_NUMBER = "#,##0";
         /// <summary>see NumberFormat property</summary>
+        public const string FORMAT_ONE_DECIMAL = "#,##0.0";
+        /// <summary>see NumberFormat property</summary>
         public const string FORMAT_TWO_DECIMAL = "#,##0.00";
         /// <summary>see NumberFormat property</summary>
         public const string FORMAT_CURRENCY = "$#,##0.00";
@@ -88,7 +90,7 @@ namespace kuujinbo.EPPlusWrapper
         {
             return ColorTranslator.FromHtml(webColor);
         }
-        
+
         /// <summary>
         /// see EPPlus docs for supported formulas calculations and helper 
         /// methods in ExcelWriter()
@@ -100,7 +102,7 @@ namespace kuujinbo.EPPlusWrapper
         /// for cells that perform calculations. 
         /// </summary>
         public string NumberFormat { get; set; }
-        
+
         public Cell()
         {
             BackgroundColor = DefaultBackgroundColor;

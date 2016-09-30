@@ -10,10 +10,12 @@ namespace kuujinbo.EPPlusWrapper.Tests
     public class ExcelWriterTests : IDisposable
     {
         ExcelWriter _writer;
+        const double _defaultColWidth = 8.76D;
+
         public ExcelWriterTests()
         {
             _writer = new ExcelWriter();
-            _writer.AddSheet("test");
+            _writer.AddSheet("test", defaultColWidth: _defaultColWidth);
         }
 
         public void Dispose()
@@ -249,7 +251,8 @@ namespace kuujinbo.EPPlusWrapper.Tests
             _writer.WriteCell(1, 1, cell);
             _writer.WriteCell(1, 2, badFontSize);
             _writer.WriteCell(1, 3, formula);
-            _writer.FreezePanes(1, 3, true);
+            _writer.FreezePanes(1, 3);
+            _writer.PrintRepeatRows(1, 1);
             var bytes = _writer.GetAllBytes();
             _writer.Dispose();
 
@@ -263,6 +266,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
                     var style = wrapperCell.Style;
 
                     Assert.Equal(1, package.Workbook.Worksheets.Count);
+                    Assert.Equal(_defaultColWidth, sheet.DefaultColWidth);
                     /* ========================================================
                      * PrinterSettings.RepeatRows.Start.Address includes sheetname, 
                      * so need two Assert()s instead of one....

@@ -1,6 +1,48 @@
-﻿/* ===========================================================================
- * __SIMPLE__ wrappers for EPPlus
- * ===========================================================================
+﻿/* ############################################################################
+ * __SIMPLE__ wrappers for EPPlus - Open XML SDK documentation is pretty
+ * useless and there are multiple versions of the XML schema to write
+ * Excel, so this library saves a huge amount of rework.
+ * 
+ * Cells and cell ranges are written with one-based row and column indexes, not
+ * the proprietary letter/number Excel address combination.
+ * ############################################################################
+ * SIMPLE USAGE - working copy/paste starter code:
+ * ############################################################################
+using (var writer = new ExcelWriter())
+{
+    writer.AddSheet(
+        "Sheet name", defaultColWidth: 4D, pageLayoutView: true
+    ).SetWorkSheetStyles(9);
+    writer.SetHeaderText(
+        writer.GetHeaderFooterText(10, "Left"),
+        writer.GetHeaderFooterText(20, "Center"),
+        "Right"
+    );
+    writer.SetFooterText(
+        null,
+        writer.GetPageNumOfTotalText(8),
+        null
+    );
+    writer.SetMargins(0.25M, 0.75M);
+
+    var cell = new Cell() { AllBorders = true, Bold = true };
+    cell.Value = "text";
+    writer.WriteCell(1, 1, cell);
+
+    cell.Value = 1000D;
+    cell.NumberFormat = Cell.FORMAT_TWO_DECIMAL;
+    writer.WriteCell(1, 2, cell);
+
+    cell.Value = "merged cell";
+    cell.NumberFormat = Cell.FORMAT_TEXT;
+    writer.WriteMergedCell(new CellRange(2, 1, 4, 8), cell);
+
+    File.WriteAllBytes(
+        Path.Combine(BASE_DIRECTORY, "epplus-test-simple.xlsx"),
+        writer.GetAllBytes()
+    );
+}
+ * ############################################################################
  */
 using System;
 using System.Drawing;
@@ -13,7 +55,7 @@ namespace kuujinbo.EPPlusWrapper
     /// <summary>print orientation</summary>
     public enum PageOrientation
     {
-        Landscape = eOrientation.Landscape, 
+        Landscape = eOrientation.Landscape,
         Portrait = eOrientation.Portrait
     }
 
@@ -53,9 +95,12 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>
         /// Add named worksheet with layout; default orientation and print size
         /// </summary>
-        public ExcelWriter AddSheet(string sheetName, bool pageLayoutView = false)
+        public ExcelWriter AddSheet(
+            string sheetName,
+            double defaultColWidth = 0D,
+            bool pageLayoutView = false)
         {
-            AddSheet(sheetName, PageOrientation.Landscape, PrintSize.A4, pageLayoutView);
+            AddSheet(sheetName, PageOrientation.Landscape, PrintSize.A4, defaultColWidth, pageLayoutView);
             return this;
         }
 
@@ -63,15 +108,17 @@ namespace kuujinbo.EPPlusWrapper
         /// Add named worksheet with orientation, print size, and layout
         /// </summary>
         public ExcelWriter AddSheet(
-            string sheetName, 
+            string sheetName,
             PageOrientation orientation,
             PrintSize printSize,
+            double defaultColWidth = 0D,
             bool pageLayoutView = false)
         {
             Worksheet = _package.Workbook.Worksheets.Add(sheetName);
-            Worksheet.PrinterSettings.Orientation = (eOrientation) orientation;
-            Worksheet.PrinterSettings.PaperSize = (ePaperSize) printSize;
+            Worksheet.PrinterSettings.Orientation = (eOrientation)orientation;
+            Worksheet.PrinterSettings.PaperSize = (ePaperSize)printSize;
             Worksheet.View.PageLayoutView = pageLayoutView;
+            if (defaultColWidth > 0) Worksheet.DefaultColWidth = defaultColWidth;
             return this;
         }
 
@@ -124,25 +171,30 @@ namespace kuujinbo.EPPlusWrapper
         /// format string to get an ExcelAddress ExcelWorksheet.PrinterSettings.RepeatRows 
         /// understands
         /// </summary>
-        public const string REPEAT_PRINT_ROWS = "{0}:{0}";
+        public const string REPEAT_PRINT_ROWS = "{0}:{1}";
 
         /// <summary>
         /// Excel freeze panes.
         /// </summary>
-        /// <param name="rows">number of rows to freeze</param>
-        /// <param name="columns">number of columns to freeze</param>
-        /// <param name="forPrinting">print forzen panes</param>
         /// <remarks>
-        /// Excel API makes things hard and unintuitive; we need to add 1
-        /// to the row and column parameters, because Excel counts the 
-        /// number **NOT** frozen.
+        /// [1] Excel API makes things hard and unintuitive; we need to add 1
+        ///     to the row and column parameters, because Excel counts the 
+        ///     number **NOT** frozen.
+        /// [2] FreezePanes and Worksheet.View.PageLayoutView are mutually
+        ///     exclusive; YMMV
         /// </remarks>
-        public void FreezePanes(int rows, int columns, bool forPrinting = false)
+        public void FreezePanes(int rows, int columns)
         {
             Worksheet.View.FreezePanes(rows + 1, columns + 1);
+        }
 
-            if (forPrinting) Worksheet.PrinterSettings.RepeatRows = new ExcelAddress(
-                string.Format(REPEAT_PRINT_ROWS, rows)
+        /// <summary>
+        /// Print heading row(s) on each page.
+        /// </summary>
+        public void PrintRepeatRows(int startRow, int endRow)
+        {
+            Worksheet.PrinterSettings.RepeatRows = new ExcelAddress(
+                string.Format(REPEAT_PRINT_ROWS, startRow, endRow)
             );
         }
         #endregion
@@ -255,7 +307,7 @@ namespace kuujinbo.EPPlusWrapper
         }
 
         /// <summary>
-        /// write **SINGLE** cell to current worksheet
+        /// write unmerged cell to current worksheet
         /// </summary>
         public void WriteCell(int row, int col, Cell cell)
         {
@@ -263,9 +315,9 @@ namespace kuujinbo.EPPlusWrapper
         }
 
         /// <summary>
-        /// write cell range to current worksheet 
+        /// write merged cell to current worksheet 
         /// </summary>
-        public void WriteRange(CellRange cRange, Cell cell)
+        public void WriteMergedCell(CellRange cRange, Cell cell)
         {
             var range = Worksheet.Cells[
                 cRange.FromRow,
@@ -273,13 +325,12 @@ namespace kuujinbo.EPPlusWrapper
                 cRange.ToRow,
                 cRange.ToCol
             ];
-            range.Merge = cRange.Merge;
-
+            range.Merge = true;
             Write(range, cell);
         }
 
         /// <summary>
-        /// write one or more cells to current worksheet
+        /// write cell to current worksheet
         /// </summary>
         private void Write(ExcelRange range, Cell cell)
         {
@@ -339,6 +390,7 @@ namespace kuujinbo.EPPlusWrapper
             return _package.GetAsByteArray();
         }
 
+        #region blank sheet / no data
         public const string NO_SHEETS_MESSAGE = "NO DATA AVAILABLE";
         public const int NO_SHEETS_END_COL = 20;
 
@@ -350,8 +402,8 @@ namespace kuujinbo.EPPlusWrapper
             if (_package.Workbook.Worksheets.Count == 0)
             {
                 AddSheet(NO_SHEETS_MESSAGE);
-                WriteRange(
-                    new CellRange(1, 1, NO_SHEETS_END_COL, true),
+                WriteMergedCell(
+                    new CellRange(1, 1, NO_SHEETS_END_COL),
                     new Cell()
                     {
                         AllBorders = true,
@@ -364,6 +416,7 @@ namespace kuujinbo.EPPlusWrapper
                 );
             }
         }
+        #endregion
 
         #region Dispose
         public void Dispose()

@@ -4,18 +4,13 @@ using System.Drawing;
 
 namespace kuujinbo.EPPlusWrapper
 {
-    public class CurtailmentReport
+    public class WorkReport
     {
-        #region common
-        public const int COL_START = 1;
-        #endregion
-
-        #region project / code
+        #region sheet indexes / headings
         public const int ColumnAvail = 2;
         public const int ColumnReason = 3;
         public const int ColumnShiftLength = 5;
         public const int ColumnShiftName = 6;
-
 
         public const string DAY = "DAY";
         public const string SWING = "SWING";
@@ -23,24 +18,11 @@ namespace kuujinbo.EPPlusWrapper
 
         public static readonly string[] ShiftNames = { DAY, SWING, GRAVE };
 
-        public static readonly string[] ProjectHeadings =
+        public static readonly string[] WorkHeadings =
         {
             "PROJECT/DEPT", "AVAILABILITY / WORK ITEM", "REASON", "SHOP / TRADE / CODE", "SHIFT LENGTH (Hours)", "SHIFT"
         };
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static readonly int ProjectColumns = ProjectHeadings.Length;
         #endregion
-
-        #region summary
-        public static readonly string[] SummaryHeadings = 
-        {
-            "Project/Dept", "Total Work Hours", "Total Man Days", "Comment", "DH ConcurredBy"
-        };
-        #endregion
-
 
         public int NumberOfDays { get; private set; }
         public IList<string> DayNames { get; private set; }
@@ -92,7 +74,7 @@ namespace kuujinbo.EPPlusWrapper
                 HorizontalAlignment = CellAlignment.HorizontalCenter
             };
 
-            var headings = CurtailmentReport.ProjectHeadings;
+            var headings = WorkReport.WorkHeadings;
             for (int i = 0; i < headings.Length; ++i)
             {
                 cell.Value = headings[i];
@@ -117,12 +99,12 @@ namespace kuujinbo.EPPlusWrapper
         public void WriteRequestData(ExcelWriter writer, int startRow, int hoursStartColumn, List<int> data)
         {
             var lastColumn = hoursStartColumn + NumberOfDays + 1;
-            writer.FreezePanes(1, lastColumn, true);
+            writer.FreezePanes(1, lastColumn);
 
             foreach (var d in data)
             {
                 // empty merged cells
-                writer.WriteRange(
+                writer.WriteMergedCell(
                     new CellRange(startRow, 1, hoursStartColumn - 1),
                     new Cell() { BackgroundColor = Color.LightGray, AllBorders = true }
                 );
@@ -145,8 +127,8 @@ namespace kuujinbo.EPPlusWrapper
                     var cell = i != ColumnShiftName - 1
                         ? new Cell() { AllBorders = true, Value = "test" }
                         : new Cell() { AllBorders = true, Value = 8, NumberFormat = Cell.FORMAT_TWO_DECIMAL };
-                    writer.WriteRange(
-                        new CellRange(startRow, i, startRow + 2, i, true),
+                    writer.WriteMergedCell(
+                        new CellRange(startRow, i, startRow + 2, i),
                         cell
                     );
                 }
@@ -194,8 +176,8 @@ namespace kuujinbo.EPPlusWrapper
              *  --------------------------------------------------------------
              */
             // people subtotals
-            writer.WriteRange(
-                new CellRange(startRow, 1, ColumnShiftName, true),
+            writer.WriteMergedCell(
+                new CellRange(startRow, 1, ColumnShiftName),
                 new Cell()
                 {
                     AllBorders = true,
@@ -228,8 +210,8 @@ namespace kuujinbo.EPPlusWrapper
             ++startRow;
 
             // work hour sum
-            writer.WriteRange(
-                new CellRange(startRow, 1, lastColumn - 1, true),
+            writer.WriteMergedCell(
+                new CellRange(startRow, 1, lastColumn - 1),
                 new Cell()
                 {
                     AllBorders = true,
