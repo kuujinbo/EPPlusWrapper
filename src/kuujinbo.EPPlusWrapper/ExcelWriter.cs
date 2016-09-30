@@ -1,7 +1,7 @@
 ﻿/* ############################################################################
- * __SIMPLE__ wrappers for EPPlus - Open XML SDK documentation is pretty
- * useless and there are multiple versions of the XML schema to write
- * Excel, so this library saves a huge amount of rework.
+ * __SIMPLE__ wrappers for EPPlus - Open XML SDK documentation is useless;
+ * multiple versions of the XML schema to write Excel exist. EPPlus saves a
+ * __HUGE__ amount of time that would otherwise be spent reinventing the wheel.
  * 
  * Cells and cell ranges are written with one-based row and column indexes, not
  * the proprietary letter/number Excel address combination.
