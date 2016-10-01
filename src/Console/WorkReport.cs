@@ -6,17 +6,38 @@ namespace kuujinbo.EPPlusWrapper
 {
     public class WorkReport
     {
+        Queue<int?> _hours = new Queue<int?>();
+        Queue<int?> _people = new Queue<int?>();
+        Random _random = new Random();
+
+        public WorkReport()
+        {
+            FillQueue(_hours, 1000, 1, 4);
+            FillQueue(_people, 10000, 0, 8);
+        }
+
+        private void FillQueue(Queue<int?> queue, int times, int min, int max)
+        {
+            var val = 0;
+            var tmp = 0;
+            for (int i = 0; i < times; ++i)
+            {
+                while (tmp == val)
+                {
+                    tmp = _random.Next(min, max);
+                }
+                val = tmp;
+                queue.Enqueue(val);
+            }
+        }
+
         #region sheet indexes / headings
         public const int ColumnAvail = 2;
         public const int ColumnReason = 3;
         public const int ColumnShiftLength = 5;
         public const int ColumnShiftName = 6;
 
-        public const string DAY = "DAY";
-        public const string SWING = "SWING";
-        public const string GRAVE = "GRAVE";
-
-        public static readonly string[] ShiftNames = { DAY, SWING, GRAVE };
+        public static readonly string[] ShiftNames = { "DAY", "SWING", "GRAVE" };
 
         public static readonly string[] WorkHeadings =
         {
@@ -92,10 +113,7 @@ namespace kuujinbo.EPPlusWrapper
             writer.WriteCell(row, hoursStart, cell);
         }
 
-        /// <summary>
-        /// write & format numeric curtailment period days of month; range
-        /// of cells written once for every OT request for project/department
-        /// </summary>
+
         public void WriteRequestData(ExcelWriter writer, int startRow, int hoursStartColumn, List<int> data)
         {
             var lastColumn = hoursStartColumn + NumberOfDays + 1;
@@ -109,7 +127,7 @@ namespace kuujinbo.EPPlusWrapper
                     new Cell() { BackgroundColor = Color.LightGray, AllBorders = true }
                 );
 
-                // curtailment days of month
+                // days of month
                 for (int i = 0; i <= NumberOfDays; ++i) writer.WriteCell(startRow, hoursStartColumn + i, Days[i]);
 
                 // empty summary column stores excel SUM formulas in later rows
@@ -126,7 +144,11 @@ namespace kuujinbo.EPPlusWrapper
                 {
                     var cell = i != ColumnShiftName - 1
                         ? new Cell() { AllBorders = true, Value = "test" }
-                        : new Cell() { AllBorders = true, Value = 8, NumberFormat = Cell.FORMAT_TWO_DECIMAL };
+                        : new Cell() 
+                        { 
+                            AllBorders = true, Value = _hours.Dequeue(), 
+                            NumberFormat = Cell.FORMAT_TWO_DECIMAL 
+                        };
                     writer.WriteMergedCell(
                         new CellRange(startRow, i, startRow + 2, i),
                         cell
@@ -142,7 +164,6 @@ namespace kuujinbo.EPPlusWrapper
                         new Cell() { AllBorders = true, Value = ShiftNames[i] }
                     );
 
-                    Random random = new Random();
                     var days = new int[NumberOfDays];
                     var hoursCell = new Cell() 
                     { 
@@ -150,8 +171,8 @@ namespace kuujinbo.EPPlusWrapper
                     };
                     for (int j = 0; j <= NumberOfDays; ++j) 
                     {
-                        var value = random.Next(0, 2);
-                        if (value > 0) hoursCell.Value = value;
+                        var value = _people.Dequeue();
+                        hoursCell.Value = value > 0 ? value : null;
                         writer.WriteCell(currentRow, ColumnShiftName + 1 + j, hoursCell);
                     }
 

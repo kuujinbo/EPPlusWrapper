@@ -10,7 +10,6 @@ namespace kuujinbo.EPPlusWrapper
     {
         const int SHEETS = 5;
         static readonly string BASE_DIRECTORY = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        static readonly Random random = new Random();
 
         static void Main(string[] args)
         {
@@ -87,7 +86,6 @@ namespace kuujinbo.EPPlusWrapper
 
                     // set date header column widths
                     int hoursStartColumn = WorkReport.ColumnShiftName + 1;
-                    // int startColumn = COMMENT_COLUMN + 1;
                     int hoursEndColumn = hoursStartColumn + period.DayNames.Count;
                     for (int col = hoursStartColumn; col < hoursEndColumn; ++col)
                     {
