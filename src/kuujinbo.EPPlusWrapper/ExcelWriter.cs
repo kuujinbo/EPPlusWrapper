@@ -8,35 +8,93 @@
  * ############################################################################
  * SIMPLE USAGE - working copy/paste starter code:
  * ############################################################################
+// [1] create writer
 using (var writer = new ExcelWriter())
 {
+    // [2] add worksheet to workbook w/optional parameters. put code from 
+    //     here to step [5], **BEFORE** the writer.GetAllBytes() call in a
+    //     repeating block to write more than one sheet
     writer.AddSheet(
-        "Sheet name", defaultColWidth: 4D, pageLayoutView: true
-    ).SetWorkSheetStyles(9);
+        "Sheet name", defaultColWidth: 10D, pageLayoutView: true
+    );
+
+    // [3] setup worksheet (ALL CALLS OPTIONAL, AND IN ANY ORDER)
+    // set default font size
+    writer.SetWorkSheetStyles(9);
+    // set print margins
+    writer.SetMargins(0.25M, 0.75M);
+    // print table heading row(s) on every page
+    writer.PrintRepeatRows(1, 3);
+    // set left/center/right print header
     writer.SetHeaderText(
         writer.GetHeaderFooterText(10, "Left"),
         writer.GetHeaderFooterText(20, "Center"),
         "Right"
     );
-    writer.SetFooterText(
-        null,
-        writer.GetPageNumOfTotalText(8),
-        null
+    // set left/center/right print footer
+    writer.SetFooterText(null, writer.GetPageNumOfTotalText(8), null);
+
+    // [4] write to current worksheet: 1-based index row and column
+    // coordinates in **ANY** order.
+    var cell = new Cell() 
+    { 
+        AllBorders = true, Bold = true, BackgroundColor = Color.LightBlue
+    };
+    var headings = new string[] { "Heading 1", "Heading 2", "Sum"};
+    var currentRow = 1;
+    var colCount = headings.Length;
+
+    // table 'heading'
+    for (int i = 0; i < colCount; ++i)
+    {
+        var colIndex = i + 1;
+        cell.Value = headings[i];
+        writer.WriteCell(currentRow, colIndex, cell);
+    }
+
+    // write data
+    for (int i = 0; i < 100; ++i)
+    {
+        ++currentRow;
+        cell = new Cell() { AllBorders = true };
+        var isInt = i % 2 == 0;
+        cell.NumberFormat = isInt ? Cell.FORMAT_WHOLE_NUMBER : Cell.FORMAT_CURRENCY;
+        for (int j = 1; j < colCount; ++j)
+        {
+            var val = i + j;
+            cell.Value = val;
+            writer.WriteCell(currentRow, j, cell);
+        }
+        cell.Formula = writer.GetRowSum(1, colCount - 1, currentRow);
+        writer.WriteCell(currentRow, colCount, cell);
+    }
+
+    // write arbitrary row
+    cell = new Cell() 
+    { 
+        AllBorders = true, BackgroundColor = Color.LightGray, Bold = true,
+        HorizontalAlignment = CellAlignment.HorizontalRight,
+        VerticalAlignment = CellAlignment.VerticalCenter,
+        Value = "Sum Last Column"
+    };
+    writer.WriteMergedCell(
+        new CellRange(++currentRow, 1, currentRow + 1, colCount - 1), 
+        cell
     );
-    writer.SetMargins(0.25M, 0.75M);
 
-    var cell = new Cell() { AllBorders = true, Bold = true };
-    cell.Value = "text";
-    writer.WriteCell(1, 1, cell);
-
-    cell.Value = 1000D;
-    cell.NumberFormat = Cell.FORMAT_TWO_DECIMAL;
-    writer.WriteCell(1, 2, cell);
-
-    cell.Value = "merged cell";
-    cell.NumberFormat = Cell.FORMAT_TEXT;
-    writer.WriteMergedCell(new CellRange(2, 1, 4, 8), cell);
-
+    cell = new Cell()
+    {
+        AllBorders = true, BackgroundColor = Color.LightGray, Bold = true,
+        Formula = writer.GetColumnSum(2, currentRow - 1, colCount),
+        VerticalAlignment = CellAlignment.VerticalCenter,
+        NumberFormat = Cell.FORMAT_TWO_DECIMAL
+    };
+    writer.WriteMergedCell(
+        new CellRange(currentRow, colCount, currentRow + 1, colCount),
+        cell
+    );
+        
+    // [5] write workbook
     File.WriteAllBytes(
         Path.Combine(BASE_DIRECTORY, "epplus-test-simple.xlsx"),
         writer.GetAllBytes()
@@ -95,19 +153,18 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>
         /// Add named worksheet with layout; default orientation and print size
         /// </summary>
-        public ExcelWriter AddSheet(
+        public void AddSheet(
             string sheetName,
             double defaultColWidth = 0D,
             bool pageLayoutView = false)
         {
             AddSheet(sheetName, PageOrientation.Landscape, PrintSize.A4, defaultColWidth, pageLayoutView);
-            return this;
         }
 
         /// <summary>
         /// Add named worksheet with orientation, print size, and layout
         /// </summary>
-        public ExcelWriter AddSheet(
+        public void AddSheet(
             string sheetName,
             PageOrientation orientation,
             PrintSize printSize,
@@ -119,7 +176,6 @@ namespace kuujinbo.EPPlusWrapper
             Worksheet.PrinterSettings.PaperSize = (ePaperSize)printSize;
             Worksheet.View.PageLayoutView = pageLayoutView;
             if (defaultColWidth > 0) Worksheet.DefaultColWidth = defaultColWidth;
-            return this;
         }
 
         /// <summary>
@@ -153,7 +209,7 @@ namespace kuujinbo.EPPlusWrapper
         /// set default worksheet styles: font size, family, alignment, and wrapping.
         /// see Cell class for defaults; wrapping **ALWAYS** on.
         /// </summary>
-        public ExcelWriter SetWorkSheetStyles(int fontSize, string fontFamily = "Arial")
+        public void SetWorkSheetStyles(int fontSize, string fontFamily = "Arial")
         {
             using (var allCells = Worksheet.Cells)
             {
@@ -164,7 +220,6 @@ namespace kuujinbo.EPPlusWrapper
                 style.Font.Size = fontSize;
                 style.Font.Name = fontFamily;
             }
-            return this;
         }
 
         /// <summary>
