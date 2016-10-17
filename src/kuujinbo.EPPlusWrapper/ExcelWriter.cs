@@ -391,10 +391,18 @@ namespace kuujinbo.EPPlusWrapper
         {
             using (range)
             {
-                var style = range.Style;
-                range.Value = cell.Value;
-                range.Style.Font.Bold = cell.Bold;
+                if (!range.Merge)
+                {
+                    range.Value = cell.Value;
+                }
+                // otherwise value written for **EVERY** cell in range
+                else
+                {
+                    Worksheet.Cells[range.Start.Address].Value = cell.Value;
+                }
 
+                var style = range.Style;
+                style.Font.Bold = cell.Bold;
                 if (cell.AllBorders)
                 {
                     style.Border.BorderAround(ExcelBorderStyle.Thin);
