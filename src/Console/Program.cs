@@ -43,12 +43,16 @@ namespace kuujinbo.EPPlusWrapper
                 writer.SetMargins(0.25M, 0.75M);
 
                 var cell = new Cell() { AllBorders = true, Bold = true };
-                cell.Value = "text";
+                cell.Value = "text    ";
                 writer.WriteCell(1, 1, cell);
 
                 cell.Value = 1000D;
                 cell.NumberFormat = Cell.FORMAT_TWO_DECIMAL;
                 writer.WriteCell(1, 2, cell);
+
+                cell.Value = DateTime.Now;
+                cell.NumberFormat = Cell.FORMAT_DATE;
+                writer.WriteCell(1, 3, cell);
 
                 cell.Value = "merged cell";
                 cell.NumberFormat = Cell.FORMAT_TEXT;

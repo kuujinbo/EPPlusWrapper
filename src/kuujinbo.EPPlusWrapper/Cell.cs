@@ -42,6 +42,8 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>see NumberFormat property</summary>
         public const string FORMAT_CURRENCY = "$#,##0.00";
 
+        public static readonly string FORMAT_DATE = System.Globalization.DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
+
         /// <summary>Default worksheet background color</summary>
         public static readonly Color DefaultBackgroundColor = Color.White;
         /// <summary>Default worksheet font color</summary>
