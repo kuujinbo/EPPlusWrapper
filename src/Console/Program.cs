@@ -25,11 +25,18 @@ namespace kuujinbo.EPPlusWrapper
 
         static void CreateSimpleReport()
         {
+            // [1] create writer
             using (var writer = new ExcelWriter())
             {
+                // [2] add worksheet to workbook w/optional parameters. put code from 
+                //     here to step [5], **BEFORE** the writer.GetAllBytes() call in a
+                //     repeating block to write more than one sheet
                 writer.AddSheet(
                     "Sheet name", defaultColWidth: 4D, pageLayoutView: true
-                ).SetWorkSheetStyles(9);
+                );
+                // [3] setup worksheet (ALL CALLS OPTIONAL, AND IN ANY ORDER)
+                // set default font size
+                writer.SetWorkSheetStyles(9);
                 writer.SetHeaderText(
                     writer.GetHeaderFooterText(10, "Left"),
                     writer.GetHeaderFooterText(20, "Center"),
@@ -42,6 +49,8 @@ namespace kuujinbo.EPPlusWrapper
                 );
                 writer.SetMargins(0.25M, 0.75M);
 
+                // [4] write to current worksheet: 1-based index row and column
+                // coordinates in **ANY** order.
                 var cell = new Cell() { AllBorders = true, Bold = true };
                 cell.Value = "text    ";
                 writer.WriteCell(1, 1, cell);
@@ -58,6 +67,7 @@ namespace kuujinbo.EPPlusWrapper
                 cell.NumberFormat = Cell.FORMAT_TEXT;
                 writer.WriteMergedCell(new CellRange(2, 1, 4, 8), cell);
 
+                // [5] write workbook
                 File.WriteAllBytes(
                     Path.Combine(BASE_DIRECTORY, "epplus-test-simple.xlsx"),
                     writer.GetAllBytes()
@@ -75,7 +85,8 @@ namespace kuujinbo.EPPlusWrapper
                 for (int i = 0; i < SHEETS; ++i)
                 {
                     var sheetName = string.Format("Project {0:D4}", i);
-                    writer.AddSheet(sheetName, pageLayoutView: true).SetWorkSheetStyles(9);
+                    writer.AddSheet(sheetName, pageLayoutView: true);
+                    writer.SetWorkSheetStyles(9);
                     writer.SetHeaderText(
                         null,
                         writer.GetHeaderFooterText(20, sheetName),

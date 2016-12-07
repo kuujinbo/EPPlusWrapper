@@ -187,13 +187,13 @@ namespace kuujinbo.EPPlusWrapper.Tests
         }
 
         [Fact]
-        public void GetColumnSum_WithIndexAndColumn_GetsFormattedForula()
+        public void GetColumnSum_WithIndexAndColumn_GetsFormattedFormula()
         {
             Assert.Equal("SUM(A1:A4)", _writer.GetColumnSum(1, 4, 1));
         }
 
         [Fact]
-        public void GetRowSum_WithIndexAndColumn_GetsFormattedForula()
+        public void GetRowSum_WithIndexAndColumn_GetsFormattedFormula()
         {
             Assert.Equal("SUM(B4:H4)", _writer.GetRowSum(2, 8, 4));
         }
