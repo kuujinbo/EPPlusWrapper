@@ -258,7 +258,7 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>
         /// header and footer font family and weight
         /// </summary>
-        public const string HEADER_FOOTER_FONT = "&\"Arial,Regular Bold\"";
+        public const string HEADER_FOOTER_FONT = "&\"Arial,Bold\"";
         public const string PAGE_X_OF_Y = "&{0}Page {1} of {2}";
 
         /// <summary>
@@ -286,11 +286,24 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>
         /// EPPlus wrapper to properly format setting header/footer text
         /// </summary>
-        public string GetHeaderFooterText(int fontSize, string text)
+        public string GetHeaderFooterText(int fontSize, string text, string color = "black")
         {
-            return string.Format("&{0}{1}{2}", fontSize, HEADER_FOOTER_FONT, text);
-            //                                           ^^^^^^^^^^^^^^^^^^
-            // font family and weight hard-coded for simplicity
+            // if caller passes unknown value, defaults to black
+            var lColor = Color.FromName(color);
+            var RRGGBB = string.Format("{0:X2}{1:X2}{2:X2}", lColor.R, lColor.G, lColor.B);
+
+            return string.Format(
+                "&{0}{1}{2}",
+                fontSize,
+                string.Format(
+                    "{0}{1}{2}",
+                // font family && weight hard-coded for simplicity
+                    HEADER_FOOTER_FONT,
+                    ExcelHeaderFooter.FontColor,
+                    RRGGBB
+                ),
+                text
+            );
         }
 
         /// <summary>

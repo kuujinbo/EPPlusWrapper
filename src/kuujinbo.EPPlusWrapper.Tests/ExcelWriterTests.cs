@@ -129,9 +129,18 @@ namespace kuujinbo.EPPlusWrapper.Tests
         [Fact]
         public void GetHeaderFooterText_SizeAndText_ReturnsFormattedText()
         {
-            Assert.Equal(
-                "&20&\"Arial,Regular Bold\"some text", 
-                _writer.GetHeaderFooterText(20, "some text")
+            var size = 20;
+            var text = "some text";
+            var color = Color.Black;
+
+            var result = _writer.GetHeaderFooterText(20, "some text");
+
+            Assert.Contains(ExcelWriter.HEADER_FOOTER_FONT, result);
+            Assert.Contains(size.ToString(), result);
+            Assert.Contains(text, result);
+            Assert.Contains(
+                string.Format("{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B),
+                result
             );
         }
 

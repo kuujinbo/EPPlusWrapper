@@ -39,7 +39,7 @@ namespace kuujinbo.EPPlusWrapper
                 writer.SetWorkSheetStyles(9);
                 writer.SetHeaderText(
                     writer.GetHeaderFooterText(10, "Left"),
-                    writer.GetHeaderFooterText(20, "Center"),
+                    writer.GetHeaderFooterText(20, "Center", "red"),
                     "Right"
                 );
                 writer.SetFooterText(
