@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/kuujinbo/EPPlusWrapper</projectUrl>
     <iconUrl>https://www.gravatar.com/avatar/2bb860fa39a843f9d6931a7756e5444e</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>ASP.NET MVC Utilities</description>
+    <description>A Simple EPPlus Wrapper</description>
     <copyright>Public Domain</copyright>
     <language>en-US</language>
     <tags>kuujinbo EPPlus excel</tags>
