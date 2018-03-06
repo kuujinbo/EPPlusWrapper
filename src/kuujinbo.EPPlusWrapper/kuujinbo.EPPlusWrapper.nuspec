@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>kuujinbo.EPPlusWrapper</id>
+    <version>1.0.0.0</version>
+    <title>A Simple EPPlus Wrapper</title>
+    <authors>kuujinbo</authors>
+    <owners>kuujinbo</owners>
+    <licenseUrl>https://creativecommons.org/publicdomain/zero/1.0/</licenseUrl>
+    <projectUrl>https://github.com/kuujinbo/EPPlusWrapper</projectUrl>
+    <iconUrl>https://www.gravatar.com/avatar/2bb860fa39a843f9d6931a7756e5444e</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ASP.NET MVC Utilities</description>
+    <copyright>Public Domain</copyright>
+    <language>en-US</language>
+    <tags>kuujinbo EPPlus excel</tags>
+    <dependencies>
+      <dependency id="EPPlus" version="4.1.1" />
+    </dependencies>	
+  </metadata>
+</package>
