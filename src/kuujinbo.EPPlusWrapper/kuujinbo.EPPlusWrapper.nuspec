@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>kuujinbo.EPPlusWrapper</id>
-    <version>1.0.0.0</version>
+    <version>1.0.0.1</version>
     <title>A Simple EPPlus Wrapper</title>
     <authors>kuujinbo</authors>
     <owners>kuujinbo</owners>

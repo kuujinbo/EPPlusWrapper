@@ -6,12 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("kuujinbo.EPPlusWrapper")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A Simple EPPlus Wrapper")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("kuujinbo.EPPlusWrapper")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2016")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
