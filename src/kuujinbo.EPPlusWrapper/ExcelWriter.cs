@@ -379,27 +379,11 @@ namespace kuujinbo.EPPlusWrapper
         public const int NO_SHEETS_END_COL = 20;
 
         /// <summary>
-        /// add blank sheet with a simple message when workbook has no sheets.
+        /// Finalize writing the file.
         /// </summary>
         private void Finalize()
         {
-            if (_package.Workbook.Worksheets.Count == 0)
-            {
-                AddSheet(NO_SHEETS_MESSAGE);
-                WriteMergedCell(
-                    new CellRange(1, 1, NO_SHEETS_END_COL),
-                    new Cell()
-                    {
-                        AllBorders = true,
-                        Bold = true,
-                        BackgroundColor = Color.Yellow,
-                        FontSize = 20,
-                        HorizontalAlignment = CellAlignment.HorizontalCenter,
-                        Value = NO_SHEETS_MESSAGE
-                    }
-                );
-            }
-            else
+            if (_package.Workbook.Worksheets.Count > 0)
             {
                 if (FormatAsTable)
                 {
@@ -417,6 +401,22 @@ namespace kuujinbo.EPPlusWrapper
                         table.TableStyle = TableStyles.Light1;
                     }
                 }
+            }
+            else
+            {   // add blank sheet with simple message.
+                AddSheet(NO_SHEETS_MESSAGE);
+                WriteMergedCell(
+                    new CellRange(1, 1, NO_SHEETS_END_COL),
+                    new Cell()
+                    {
+                        AllBorders = true,
+                        Bold = true,
+                        BackgroundColor = Color.Yellow,
+                        FontSize = 20,
+                        HorizontalAlignment = CellAlignment.HorizontalCenter,
+                        Value = NO_SHEETS_MESSAGE
+                    }
+                );
             }
         }
         #endregion
