@@ -213,7 +213,7 @@ namespace kuujinbo.EPPlusWrapper.Tests
 
             Assert.IsType(typeof(byte[]), bytes);
 
-            // verify AddBlankSheet() is called
+            // verify Finalize() is called
             using (var ms = new MemoryStream(bytes))
             {
                 using (var package = new ExcelPackage(ms))

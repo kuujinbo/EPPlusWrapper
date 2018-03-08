@@ -28,44 +28,63 @@ namespace kuujinbo.EPPlusWrapper
             // [1] create writer
             using (var writer = new ExcelWriter())
             {
-                // [2] add worksheet to workbook w/optional parameters. put code from 
-                //     here to step [5], **BEFORE** the writer.GetAllBytes() call in a
-                //     repeating block to write more than one sheet
-                writer.AddSheet(
-                    "Sheet name", defaultColWidth: 4D, pageLayoutView: true
-                );
-                // [3] setup worksheet (ALL CALLS OPTIONAL, AND IN ANY ORDER)
-                // set default font size
-                writer.SetWorkSheetStyles(9);
-                writer.SetHeaderText(
-                    writer.GetHeaderFooterText(10, "Left"),
-                    writer.GetHeaderFooterText(20, "Center", "red"),
-                    "Right"
-                );
-                writer.SetFooterText(
-                    null,
-                    writer.GetPageNumOfTotalText(8),
-                    null
-                );
-                writer.SetMargins(0.25M, 0.75M);
+                var sheetCount = 0;
+                var cellValue = 0;
+                writer.FormatAsTable = true;
+                do
+                {
+                    // [2] add worksheet to workbook w/optional parameters. put code from 
+                    //     here to step [5], **BEFORE** the writer.GetAllBytes() call in a
+                    //     repeating block to write more than one sheet
+                    writer.AddSheet(
+                        string.Format("Sheet-{0}", sheetCount), 8D
+                    );
+                    // [3] setup worksheet (ALL CALLS OPTIONAL, AND IN ANY ORDER)
+                    // set default font size
+                    writer.SetWorkSheetStyles(9);
+                    writer.SetHeaderText(
+                        writer.GetHeaderFooterText(10, "Left"),
+                        writer.GetHeaderFooterText(20, "Center", "red"),
+                        "Right"
+                    );
+                    writer.SetFooterText(
+                        null,
+                        writer.GetPageNumOfTotalText(8),
+                        null
+                    );
+                    writer.SetMargins(0.25M, 0.75M);
 
-                // [4] write to current worksheet: 1-based index row and column
-                // coordinates in **ANY** order.
-                var cell = new Cell() { AllBorders = true, Bold = true };
-                cell.Value = "text    ";
-                writer.WriteCell(1, 1, cell);
+                    // [4] write to current worksheet: 1-based index row and column
+                    // coordinates in **ANY** order.
 
-                cell.Value = 1000D;
-                cell.NumberFormat = Cell.FORMAT_TWO_DECIMAL;
-                writer.WriteCell(1, 2, cell);
+                    // header
+                    var stop = 10;
+                    var cell = new Cell()
+                    {
+                        AllBorders = true,
+                        BackgroundColor = Color.LightGray,
+                        Bold = true,
+                        HorizontalAlignment = CellAlignment.HorizontalCenter
+                    };
+                    for (var i = 1; i < stop; ++i)
+                    {
+                        cell.Value = string.Format("H{0}", i);
+                        writer.WriteCell(1, i, cell);
+                    }
 
-                cell.Value = DateTime.Now;
-                cell.NumberFormat = Cell.FORMAT_DATE;
-                writer.WriteCell(1, 3, cell);
+                    // data
+                    cell = new Cell() { AllBorders = true, Bold = true };
+                    for (int i = 2; i < stop; ++i)
+                    {
+                        for (int j = 1; j < stop; ++j)
+                        {
+                            cell.Value = ++cellValue;
+                            writer.WriteCell(i, j, cell);
+                        }
+                    }
+                } while (++sheetCount < 4);
 
-                cell.Value = "merged cell";
-                cell.NumberFormat = Cell.FORMAT_TEXT;
-                writer.WriteMergedCell(new CellRange(2, 1, 4, 8), cell);
+
 
                 // [5] write workbook
                 File.WriteAllBytes(

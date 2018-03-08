@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace kuujinbo.EPPlusWrapper
+﻿namespace kuujinbo.EPPlusWrapper
 {
     public class CellRange
     {

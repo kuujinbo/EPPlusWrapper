@@ -1,116 +1,19 @@
-﻿/* ############################################################################
- * __SIMPLE__ wrappers for EPPlus - Open XML SDK documentation is useless;
- * multiple versions of the XML schema to write Excel exist. EPPlus saves a
- * __HUGE__ amount of time that would otherwise be spent reinventing the wheel.
- * 
- * Cells and cell ranges are written with one-based row and column indexes, not
- * the proprietary letter/number Excel address combination.
- * ############################################################################
- * SIMPLE USAGE - working copy/paste starter code:
- * ############################################################################
-// [1] create writer
-using (var writer = new ExcelWriter())
-{
-    // [2] add worksheet to workbook w/optional parameters. put code from 
-    //     here to step [5], **BEFORE** the writer.GetAllBytes() call in a
-    //     repeating block to write more than one sheet
-    writer.AddSheet(
-        "Sheet name", defaultColWidth: 10D, pageLayoutView: true
-    );
-
-    // [3] setup worksheet (ALL CALLS OPTIONAL, AND IN ANY ORDER)
-    // set default font size
-    writer.SetWorkSheetStyles(9);
-    // set print margins
-    writer.SetMargins(0.25M, 0.75M);
-    // print table heading row(s) on every page
-    writer.PrintRepeatRows(1, 3);
-    // set left/center/right print header
-    writer.SetHeaderText(
-        writer.GetHeaderFooterText(10, "Left"),
-        writer.GetHeaderFooterText(20, "Center"),
-        "Right"
-    );
-    // set left/center/right print footer
-    writer.SetFooterText(null, writer.GetPageNumOfTotalText(8), null);
-
-    // [4] write to current worksheet: 1-based index row and column
-    // coordinates in **ANY** order.
-    var cell = new Cell() 
-    { 
-        AllBorders = true, Bold = true, BackgroundColor = Color.LightBlue
-    };
-    var headings = new string[] { "Heading 1", "Heading 2", "Sum"};
-    var currentRow = 1;
-    var colCount = headings.Length;
-
-    // table 'heading'
-    for (int i = 0; i < colCount; ++i)
-    {
-        var colIndex = i + 1;
-        cell.Value = headings[i];
-        writer.WriteCell(currentRow, colIndex, cell);
-    }
-
-    // write data
-    for (int i = 0; i < 100; ++i)
-    {
-        ++currentRow;
-        cell = new Cell() { AllBorders = true };
-        var isInt = i % 2 == 0;
-        cell.NumberFormat = isInt ? Cell.FORMAT_WHOLE_NUMBER : Cell.FORMAT_CURRENCY;
-        for (int j = 1; j < colCount; ++j)
-        {
-            var val = i + j;
-            cell.Value = val;
-            writer.WriteCell(currentRow, j, cell);
-        }
-        cell.Formula = writer.GetRowSum(1, colCount - 1, currentRow);
-        writer.WriteCell(currentRow, colCount, cell);
-    }
-
-    // write arbitrary row
-    cell = new Cell() 
-    { 
-        AllBorders = true, BackgroundColor = Color.LightGray, Bold = true,
-        HorizontalAlignment = CellAlignment.HorizontalRight,
-        VerticalAlignment = CellAlignment.VerticalCenter,
-        Value = "Sum Last Column"
-    };
-    writer.WriteMergedCell(
-        new CellRange(++currentRow, 1, currentRow + 1, colCount - 1), 
-        cell
-    );
-
-    cell = new Cell()
-    {
-        AllBorders = true, BackgroundColor = Color.LightGray, Bold = true,
-        Formula = writer.GetColumnSum(2, currentRow - 1, colCount),
-        VerticalAlignment = CellAlignment.VerticalCenter,
-        NumberFormat = Cell.FORMAT_TWO_DECIMAL
-    };
-    writer.WriteMergedCell(
-        new CellRange(currentRow, colCount, currentRow + 1, colCount),
-        cell
-    );
-        
-    // [5] write workbook
-    File.WriteAllBytes(
-        Path.Combine(BASE_DIRECTORY, "epplus-test-simple.xlsx"),
-        writer.GetAllBytes()
-    );
-}
- * ############################################################################
- */
-using System;
+﻿using System;
 using System.Drawing;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using OfficeOpenXml.Table;
 
+/// <summary>
+/// See example USAGE:
+/// https://github.com/kuujinbo/EPPlusWrapper/tree/master/src/Console
+/// </summary>
 namespace kuujinbo.EPPlusWrapper
 {
     #region enum
-    /// <summary>print orientation</summary>
+    /// <summary>
+    /// Print orientation
+    /// </summary>
     public enum PageOrientation
     {
         Landscape = eOrientation.Landscape,
@@ -133,6 +36,11 @@ namespace kuujinbo.EPPlusWrapper
         {
             _package = new ExcelPackage();
         }
+
+        /// <summary>
+        /// Apply Excel 'format as table'
+        /// </summary>
+        public bool FormatAsTable { get; set; }
 
         /// <summary>
         /// landscape by default
@@ -462,7 +370,7 @@ namespace kuujinbo.EPPlusWrapper
         /// </summary>
         public byte[] GetAllBytes()
         {
-            AddBlankSheet();
+            Finalize();
             return _package.GetAsByteArray();
         }
 
@@ -473,7 +381,7 @@ namespace kuujinbo.EPPlusWrapper
         /// <summary>
         /// add blank sheet with a simple message when workbook has no sheets.
         /// </summary>
-        private void AddBlankSheet()
+        private void Finalize()
         {
             if (_package.Workbook.Worksheets.Count == 0)
             {
@@ -491,16 +399,42 @@ namespace kuujinbo.EPPlusWrapper
                     }
                 );
             }
+            else
+            {
+                if (FormatAsTable)
+                {
+                    for (var i = 0; i < _package.Workbook.Worksheets.Count; ++i)
+                    {
+                        var sheet = _package.Workbook.Worksheets[i + 1];
+                        var range = sheet.Cells[
+                            sheet.Dimension.Start.Row,
+                            sheet.Dimension.Start.Column,
+                            sheet.Dimension.End.Row,
+                            sheet.Dimension.End.Column
+                        ];
+
+                        var table = sheet.Tables.Add(range, string.Format("table-{0}", i));
+                        table.TableStyle = TableStyles.Light1;
+                    }
+                }
+            }
         }
         #endregion
 
         #region Dispose
+        /// <summary>
+        /// Cleanup
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Cleanup
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
