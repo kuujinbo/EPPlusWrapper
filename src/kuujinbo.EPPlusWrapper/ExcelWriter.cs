@@ -398,7 +398,7 @@ namespace kuujinbo.EPPlusWrapper
                         ];
 
                         var table = sheet.Tables.Add(range, string.Format("table-{0}", i));
-                        table.TableStyle = TableStyles.Light1;
+                        table.TableStyle = TableStyles.Medium1;
                     }
                 }
             }

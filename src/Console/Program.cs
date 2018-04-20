@@ -62,7 +62,6 @@ namespace kuujinbo.EPPlusWrapper
                     var cell = new Cell()
                     {
                         AllBorders = true,
-                        BackgroundColor = Color.LightGray,
                         Bold = true,
                         HorizontalAlignment = CellAlignment.HorizontalCenter
                     };
